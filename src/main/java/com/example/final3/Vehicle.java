@@ -48,7 +48,6 @@ public abstract class Vehicle {
     }
 
 
-
     public List<Bid> getBids() {
         return bids;
     }

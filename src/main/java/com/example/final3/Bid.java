@@ -16,10 +16,15 @@ public class Bid {
     }
 
     public double getAmount() {
+
         return amount;
     }
 
     public Vehicle getVehicle() {
         return vehicle;
+    }
+
+    public char[] getBidder() {
+        return getBidder();
     }
 }

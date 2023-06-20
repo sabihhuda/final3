@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public class HelloApplication extends Application {
@@ -23,7 +24,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         authService = new AuthenticationService();
-        auctionHouse = new AuctionHouse(authService);
+        auctionHouse = new AuctionHouse();
         VBox authBox = createAuthPage();
         primaryStage.setTitle("Auction System");
         primaryStage.setScene(new Scene(authBox, 400, 400));
@@ -75,7 +76,8 @@ public class HelloApplication extends Application {
         Button placeBidButton = new Button("Place a Bid");
 
         // Add action listeners to buttons
-        viewAuctionsButton.setOnAction(e -> {
+        viewAuctionsButton.setOnAction(e -> showAuctionListPage());
+        {
             // Logic to view auctions
             ListView<Auction> auctionListView = new ListView<>();
             auctionListView.getItems().addAll(auctionHouse.getAuctions());
@@ -86,7 +88,8 @@ public class HelloApplication extends Application {
             Scene scene = new Scene(vbox, 300, 200);
             auctionListStage.setScene(scene);
             auctionListStage.show();
-        });
+        }
+        ;
 
         placeBidButton.setOnAction(e -> {
             // Logic to place a bid
@@ -258,7 +261,6 @@ public class HelloApplication extends Application {
     }
 
 
-
     private void showAddVehicleToAuctionDialog() {
         ChoiceDialog<Auction> auctionChoiceDialog = new ChoiceDialog<>();
         auctionChoiceDialog.setTitle("Select Auction");
@@ -349,6 +351,67 @@ public class HelloApplication extends Application {
         }
     }
 
-}
+    private void showAuctionListPage() {
+        ListView<Auction> auctionListView = new ListView<>();
+        auctionListView.getItems().addAll(auctionHouse.getAuctions());
 
+        Button viewAuctionButton = new Button("View Auction");
+        viewAuctionButton.setOnAction(e -> {
+            Auction selectedAuction = auctionListView.getSelectionModel().getSelectedItem();
+            if (selectedAuction != null) {
+                showAuctionDetailsPage(selectedAuction);
+            }
+        });
+
+        VBox vbox = new VBox(auctionListView, viewAuctionButton);
+        vbox.setSpacing(10);
+        vbox.setPadding(new Insets(10));
+
+        Stage auctionListStage = new Stage();
+        auctionListStage.setTitle("Auctions");
+        auctionListStage.setScene(new Scene(vbox, 300, 200));
+        auctionListStage.show();
+    }
+
+    private void showAuctionDetailsPage(Auction auction) {
+        Stage auctionDetailsStage = new Stage();
+        auctionDetailsStage.setTitle("Auction Details");
+
+        // Create UI elements
+        Label auctionLabel = new Label("Auction: " + auction.getAuctionName());
+        ListView<String> vehicleListView = new ListView<>();
+
+        // Populate vehicle details
+        StringBuilder vehicleDetails = new StringBuilder();
+        for (Vehicle vehicle : auction.getVehicles()) {
+            vehicleDetails.append("Type: ").append(vehicle.getType()).append("\n");
+            vehicleDetails.append("Model: ").append(vehicle.getModel()).append("\n");
+            vehicleDetails.append("Make: ").append(vehicle.getMake()).append("\n");
+            vehicleDetails.append("Name: ").append(vehicle.getName()).append("\n");
+            vehicleDetails.append("Year: ").append(vehicle.getYear()).append("\n");
+            vehicleDetails.append("Price: ").append(vehicle.getPrice()).append("\n");
+            vehicleDetails.append("Highest Bid: ").append(vehicle.getHighestBid()).append("\n");
+
+            List<Bid> bids = vehicle.getBids();
+            if (!bids.isEmpty()) {
+                vehicleDetails.append("Bids:\n");
+                for (Bid bid : bids) {
+                    vehicleDetails.append("- Bid Amount: ").append(bid.getAmount())
+                            .append(", Bidder: ").append(bid.getBidder()).append("\n");
+                }
+            }
+
+            vehicleDetails.append("\n");
+        }
+        vehicleListView.getItems().add(vehicleDetails.toString());
+
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
+        root.getChildren().addAll(auctionLabel, new Label("Vehicles:"), vehicleListView);
+
+        Scene scene = new Scene(root, 400, 300);
+        auctionDetailsStage.setScene(scene);
+        auctionDetailsStage.show();
+    }
+}
 
